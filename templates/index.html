@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediktor Harga Rumah California</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="main-container">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-label"><span class="status-dot"></span>MACHINE LEARNING PREDICTION SYSTEM</div>
+        <h1>Prediktor Harga Rumah California</h1>
+        <p>
+            Prediksi harga rumah berdasarkan karakteristik
+            dan estimasi kondisi geografis wilayah California.
+        </p>
+    </header>
+
+    <div class="header">
+        <h2>Model Prediction Analytics</h2>
+        <img src="{{ url_for('static', filename='actual_vs_predicted.png') }}" alt="Actual vs Predicted House Prices" style="width: 100%; border-radius: 12px;">
+    </div>
+
+    <!-- MODEL SELECTION -->
+    <section class="section">
+        <div class="section-heading">
+            <div><span class="section-number">01</span><h2>Pilih Model Prediksi</h2></div>
+            <span class="section-caption">SELECT MODEL</span>
+        </div>
+
+        <div class="model-selection">
+            <!-- KNN CARD -->
+            <div class="model-card active" id="knn-card" onclick="selectModel('KNN')">
+                <div class="model-top">
+                    <div class="model-icon">K</div><span class="model-tag">MODEL 01</span>
+                </div>
+                <h3>K-Nearest Neighbors</h3>
+                <p>
+                    Menggunakan kedekatan antar data untuk
+                    menghasilkan estimasi harga rumah.
+                </p>
+                <div class="model-bottom">
+                    <span>KNN Regression</span><span class="select-indicator" id="knn-indicator">✓</span>
+                </div>
+            </div>
+
+            <!-- RANDOM FOREST CARD -->
+            <div class="model-card" id="rf-card" onclick="selectModel('RF')">
+                <div class="model-top">
+                    <div class="model-icon rf-icon">R</div><span class="model-tag">MODEL 02</span>
+                </div>
+                <h3>Random Forest</h3>
+                <p>
+                    Menggabungkan beberapa decision trees
+                    untuk menghasilkan prediksi harga rumah.
+                </p>
+                <div class="model-bottom">
+                    <span>Random Forest Regression</span><span class="select-indicator hidden" id="rf-indicator">✓</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <section class="section">
+        <div class="section-heading">
+            <div>
+                <span class="section-number">02</span>
+                <h2>Prediksi dan Evaluasi Model</h2>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <!-- LEFT: INPUT CARD -->
+            <div class="panel input-panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="panel-label">INPUT DATA</span>
+                        <h3>Karakteristik Rumah</h3>
+                    </div>
+                    <div class="panel-icon">⌘</div>
+                </div>
+                <p class="panel-description">
+                    Masukkan lima nilai fitur untuk
+                    melakukan prediksi harga rumah.
+                </p>
+
+                <form id="prediction-form">
+                    <div class="form-group">
+                        <label for="AveRooms">Average Rooms<span>AveRooms</span></label>
+                        <input type="number" id="AveRooms" step="any" min="0" placeholder="Contoh: 5.5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Latitude">Latitude<span>Latitude</span></label>
+                        <input type="number" id="Latitude" step="any" placeholder="Contoh: 34.05" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Longitude">Longitude<span>Longitude</span></label>
+                        <input type="number" id="Longitude" step="any" placeholder="Contoh: -118.24" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="EstLandArea">Estimated Land Area (m²)<span>EstLandArea</span></label>
+                        <input type="number" id="EstLandArea" step="any" min="0" placeholder="Contoh: 500" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="EstBuildArea">Estimated Building Area (m²)<span>EstBuildArea</span></label>
+                        <input type="number" id="EstBuildArea" step="any" min="0" placeholder="Contoh: 82.5" required>
+                    </div>
+
+                    <button type="submit" id="predict-button">
+                        <span id="button-text">Prediksi Harga Rumah</span><span>→</span>
+                    </button>
+                </form>
+
+
+                <!-- PREDICTION RESULT -->
+                <div id="prediction-result" class="result-box hidden">
+                    <span class="result-label">HASIL PREDIKSI</span>
+                    <h2 id="prediction-value">$0</h2>
+                    <p id="prediction-detail">
+                        Hasil estimasi harga rumah
+                    </p>
+                </div>
+                <div id="error-message" class="error-message hidden"></div>
+            </div>
+
+
+            <!-- RIGHT: EVALUATION CARD -->
+            <div class="panel evaluation-panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="panel-label">MODEL PERFORMANCE</span>
+                        <h3>Evaluasi Model</h3>
+                    </div>
+                    <div class="performance-badge">TEST SET</div>
+                </div>
+                <p class="panel-description">
+                    Statistik evaluasi berdasarkan data testing
+                    dengan rasio pembagian 80:20.
+                </p>
+
+                <!-- METRICS -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span>R² Score</span>
+                        <h2 id="metric-r2">-</h2>
+                        <small>Coefficient of Determination</small>
+                    </div>
+                    <div class="metric-card">
+                        <span>RMSE</span>
+                        <h2 id="metric-rmse">-</h2>
+                        <small>Root Mean Squared Error</small>
+                    </div>
+                    <div class="metric-card">
+                        <span>MAE</span>
+                        <h2 id="metric-mae">-</h2>
+                        <small>Mean Absolute Error</small>
+                    </div>
+                    <div class="metric-card">
+                        <span>MSE</span>
+                        <h2 id="metric-mse">-</h2>
+                        <small>Mean Squared Error</small>
+                    </div>
+                </div>
+
+                <!-- HYPERPARAMETERS -->
+                <div class="parameter-section">
+                    <div class="parameter-heading">
+                        <span class="parameter-icon">⚙</span>
+                        <h4>Hyperparameter Configuration</h4>
+                    </div>
+                    <p>
+                        Model ini telah di-hyperparameter tuning
+                        dengan parameter terbaik berikut:
+                    </p>
+                    <div id="parameter-list" class="parameter-list"></div>
+                </div>
+                <div class="evaluation-footer">
+                    <span class="status-dot"></span>
+                    <span>Hyperparameter tuning completed</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>
+            California Housing Price Predictor<span>•</span>Machine Learning Regression
+        </p>
+    </footer>
+</div>
+
+<script id="model-data" type="application/json">{{ model_info | tojson }}</script>
+
+<!-- JAVASCRIPT -->
+<script>
+
+const modelInfo = JSON.parse(document.getElementById("model-data").textContent);
+let selectedModel = "KNN";
+
+
+// ==========================================
+// SELECT MODEL
+// ==========================================
+
+function selectModel(model) {
+
+    selectedModel = model;
+
+    const knnCard = document.getElementById("knn-card");
+    const rfCard = document.getElementById("rf-card");
+
+    knnCard.classList.toggle("active", model === "KNN");
+    rfCard.classList.toggle("active", model === "RF");
+
+    document.getElementById("knn-indicator")
+        .classList.toggle("hidden", model !== "KNN");
+
+    document.getElementById("rf-indicator")
+        .classList.toggle("hidden", model !== "RF");
+
+    updateEvaluation();
+}
+
+
+// ==========================================
+// UPDATE EVALUATION STATISTICS
+// ==========================================
+
+function updateEvaluation() {
+
+    const info = modelInfo[selectedModel];
+    const metrics = info.metrics;
+    const parameters = info.parameters;
+
+    document.getElementById("metric-r2").textContent =
+        Number(metrics.R2).toFixed(4);
+
+    document.getElementById("metric-rmse").textContent =
+        Number(metrics.RMSE).toFixed(4);
+
+    document.getElementById("metric-mae").textContent =
+        Number(metrics.MAE).toFixed(4);
+
+    document.getElementById("metric-mse").textContent =
+        Number(metrics.MSE).toFixed(4);
+
+
+    // Display best hyperparameters
+    const parameterList =
+        document.getElementById("parameter-list");
+
+    parameterList.innerHTML = "";
+
+    Object.entries(parameters).forEach(([key, value]) => {
+
+        const item = document.createElement("div");
+
+        item.className = "parameter-item";
+
+        const name = document.createElement("span");
+        name.textContent = key;
+
+        const val = document.createElement("strong");
+        val.textContent = String(value);
+
+        item.appendChild(name);
+        item.appendChild(val);
+
+        parameterList.appendChild(item);
+
+    });
+
+}
+
+
+// ==========================================
+// PREDICTION
+// ==========================================
+
+document.getElementById("prediction-form")
+    .addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const button = document.getElementById("predict-button");
+    const buttonText = document.getElementById("button-text");
+
+    const resultBox = document.getElementById("prediction-result");
+    const errorBox = document.getElementById("error-message");
+
+    resultBox.classList.add("hidden");
+    errorBox.classList.add("hidden");
+
+    const data = {
+        model: selectedModel,
+
+        AveRooms: Number(document.getElementById("AveRooms").value),
+        Latitude: Number(document.getElementById("Latitude").value),
+        Longitude: Number(document.getElementById("Longitude").value),
+        EstLandArea: Number(document.getElementById("EstLandArea").value),
+        EstBuildArea: Number(document.getElementById("EstBuildArea").value)
+    };
+
+    button.disabled = true;
+    buttonText.textContent = "Memproses Prediksi...";
+
+    try {
+
+        const response = await fetch("/predict", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(data)
+
+        });
+
+        const output = await response.json();
+
+        if (!response.ok) {
+            throw new Error(output.error || "Prediksi gagal.");
+        }
+
+        const price = output.prediction_usd;
+
+        document.getElementById("prediction-value")
+            .textContent = price.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+                maximumFractionDigits: 0
+            });
+
+        document.getElementById("prediction-detail")
+            .textContent =
+            "Estimasi MedHouseVal: " +
+            output.prediction.toFixed(4) +
+            " (satuan $100.000)";
+
+        resultBox.classList.remove("hidden");
+
+    } catch (error) {
+
+        errorBox.textContent = error.message;
+        errorBox.classList.remove("hidden");
+
+    } finally {
+
+        button.disabled = false;
+        buttonText.textContent = "Prediksi Harga Rumah";
+
+    }
+
+});
+
+
+// Initialize default model
+updateEvaluation();
+
+</script>
+
+</body>
+</html>

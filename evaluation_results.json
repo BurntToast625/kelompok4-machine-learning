@@ -1,0 +1,35 @@
+{
+    "dataset": "California Housing",
+    "target": "MedHouseVal",
+    "test_size": 0.2,
+    "random_state": 42,
+    "evaluation_metrics": {
+        "KNN": {
+            "MAE": 0.3893082509453115,
+            "MSE": 0.3456148822346008,
+            "RMSE": 0.5878901957292711,
+            "R2": 0.7445281878014427
+        },
+        "RandomForest": {
+            "MAE": 0.30963563279877887,
+            "MSE": 0.23096484161392497,
+            "RMSE": 0.4805880165109456,
+            "R2": 0.8292752723500778
+        }
+    },
+    "best_parameters": {
+        "KNN": {
+            "metric": "minkowski",
+            "n_neighbors": 9,
+            "p": 3,
+            "weights": "distance"
+        },
+        "RandomForest": {
+            "n_estimators": 100,
+            "min_samples_split": 2,
+            "min_samples_leaf": 2,
+            "max_features": 1.0,
+            "max_depth": null
+        }
+    }
+}
